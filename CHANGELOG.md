@@ -5,9 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-10-03
+
+### Added
+
+- `Badge` 角标组件：数字 / 字符串 / 任意 ReactNode（含 `naive-icons` 图标）三种内容形态，`overflowCount` 封顶后显示为 `${count}+`（仅纯数字参与换算），`dot` 只展示小圆点，`showZero` 控制数值为 0 时是否展示；`size`（`small` / `medium`）与 12 色 `color` 调色板与 `Card` / `Tag` 保持一致；**内容 ≤ 2 字符时自动渲染为正圆**并同步收窄字号，`100` / `99+` / `999+` 及「热更」等超宽内容自动回退为胶囊；不传 `children` 时可作为独立徽标使用
+
+### Changed
+
+- `Progress` 改为**描边岛屿**样式：轨道加 2px 描边，填充换成带内高光的薄荷渐变，100% 完成态有独立配色；轨道纹理保留原有手作纸质感，`size` 契约不变（改为含描边总高），`variant` 场景图路径不受影响
+- `Input` 背景色统一为 `#fffdf7`，与仓库既有奶油色板对齐（与 `Upload` / `Select` / `DatePicker` 弹层同色），并修正文档中与实现不一致的旧色值
+- 场景图 URL 抽到独立的 `sceneImages` 模块，`Background` 与 `Progress` 共用，消除重复
+
+### Fixed
+
+- `Badge` 数值为空字符串时不再渲染空角标
+- `Form` 校验失败标记此前是裸 `✕` 字符，现改用 `naive-icons` 的 `CloseIcon`，与「图标必须来自 `naive-icons`」的设计硬规则一致
+- 移除源码中的裸 Unicode 符号（`✕`、制表符字符），全部迁移至图标或转义写法
+
 ## [2.1.0] - 2026-10-02
 
 ### Added
+
+- `Rate` 星级评分组件：受控（`value` / `onChange`）与非受控（`defaultValue`）两种用法，`count` 星星总数、`size` 尺寸、`readonly` 只读、`allowClear` 再次点击同一颗星清空评分（默认开启，清空时回调值为 `0`）；完整键盘操作（方向键移动、`Enter` / `Space` 确认，焦点与读屏均可用）；连续点击时星星按提交顺序逐颗点亮，动画重放而非跳过
 
 - `Avatar` 头像组件：图片 / 图标 / 文字三种形态，圆形 / 方形两种形状，三档预设尺寸（32 / 40 / 48px）与任意数值尺寸；`gap` 控制内边距并对超长文字自动缩放；图片加载失败自动回退到图标或文字。`Avatar.Group` 支持 `gap` 控制的头像叠加与 `maxCount` 超出折叠为「+N」，组级 `size` / `shape` 会注入未自行设置的子项，同时提供 `Avatar.Group` 静态属性写法
 - `Avatar` 的 a11y：图片头像透传 `alt`，裸图标头像带 `role="img"` + `aria-label="avatar"`，并新增 2 条 axe 冒烟用例
