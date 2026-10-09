@@ -169,12 +169,12 @@ const CountUpDemo: React.FC = () => {
                 </Button>
             </div>
 
-            <div style={labelStyle}>缓动曲线（同为 2 秒 1000 分）</div>
+            <div style={labelStyle}>缓动曲线（同为 2 秒 7890 分）</div>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
                 <CountUp
                     key={`linear-${easingRound}`}
                     isCounting
-                    end={1000}
+                    end={7890}
                     duration={2}
                     easing="linear"
                     thousandsSeparator=","
@@ -182,7 +182,7 @@ const CountUpDemo: React.FC = () => {
                 <CountUp
                     key={`cubic-${easingRound}`}
                     isCounting
-                    end={1000}
+                    end={7890}
                     duration={2}
                     easing="easeOutCubic"
                     thousandsSeparator=","
@@ -190,7 +190,7 @@ const CountUpDemo: React.FC = () => {
                 <CountUp
                     key={`expo-${easingRound}`}
                     isCounting
-                    end={1000}
+                    end={7890}
                     duration={2}
                     easing="easeOutExpo"
                     thousandsSeparator=","
