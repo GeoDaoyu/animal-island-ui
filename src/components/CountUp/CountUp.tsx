@@ -288,10 +288,13 @@ export const CountUp: React.FC<CountUpProps> = ({
             return undefined;
         }
 
-        // duration = 0 直接到位，不必等一帧
+        // duration = 0 直接到位，不必等一帧；onComplete 仍可能排下重播计时器，所以同样要交出 cleanup
         if (totalMs === 0) {
             finish(0);
-            return undefined;
+            return () => {
+                clearFrame();
+                clearRepeat();
+            };
         }
 
         lastTimestampRef.current = null;

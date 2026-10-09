@@ -50,10 +50,14 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 {/* replay with a key — the documented recipe of the reference library */}
 <CountUp key={round} isCounting end={score} />
 
-{/* render prop: take over rendering and drive reset() yourself */}
+{/* render prop: take over rendering; keep focusable elements outside (the plate is aria-hidden) */}
 <CountUp isCounting end={86} duration={1.2}>
-    {({ value, reset }) => <span>{Math.round(value)}<button onClick={() => reset()}>replay</button></span>}
+    {({ value, reset }) => {
+        resetRef.current = reset;
+        return <span>{Math.round(value)}</span>;
+    }}
 </CountUp>
+<button onClick={() => resetRef.current?.()}>replay</button>
 ```
 
 Notes:

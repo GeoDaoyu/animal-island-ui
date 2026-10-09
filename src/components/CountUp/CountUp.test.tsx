@@ -211,6 +211,18 @@ describe('CountUp', () => {
         expect(numberText(container)).toBe('100');
     });
 
+    it('duration=0 排下的重播计时器会在依赖变化时被取消', () => {
+        const onComplete = vi.fn().mockReturnValueOnce({ shouldRepeat: true, delay: 0.5 });
+        const { rerender } = render(<CountUp isCounting end={10} duration={0} onComplete={onComplete} />);
+        expect(onComplete).toHaveBeenCalledTimes(1);
+
+        // duration 变化会重跑 effect：上一次（duration=0 分支）排的重播计时器必须一起被清掉
+        rerender(<CountUp isCounting end={10} duration={0.3} onComplete={onComplete} />);
+        advance(600); // duration=0.3 跑完（第 2 次回调）；旧计时器本该在 t=500 触发重播
+        advance(1_200); // 再留足时间：旧计时器若残留，这一轮会跑到终点，多出第 3 次回调
+        expect(onComplete).toHaveBeenCalledTimes(2);
+    });
+
     it('环境不支持 requestAnimationFrame 时静态展示且不报错', () => {
         vi.stubGlobal('requestAnimationFrame', undefined);
         const { container } = render(<CountUp isCounting end={100} duration={1} />);
