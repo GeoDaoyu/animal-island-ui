@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { playCountUpChime } from './chime';
 import styles from './count-up.module.less';
 
 export type CountUpSize = 'small' | 'middle' | 'large';
@@ -24,8 +23,6 @@ export interface CountUpCompleteResult {
 export interface CountUpCelebrateOptions {
     /** 庆祝文案，默认「当当！」 */
     text?: React.ReactNode;
-    /** 是否播放「当当」提示音，默认 false（受浏览器自动播放策略限制，需要用户交互后才能出声） */
-    sound?: boolean;
 }
 
 export interface CountUpRenderState {
@@ -207,12 +204,8 @@ export const CountUp: React.FC<CountUpProps> = ({
             setCounting(false);
             commit(end, true);
 
-            const options = celebrateRef.current;
-            if (options) {
+            if (celebrateRef.current) {
                 setCelebrating(true);
-                if (typeof options === 'object' && options.sound) {
-                    playCountUpChime();
-                }
                 if (celebrateTimerRef.current !== null) {
                     window.clearTimeout(celebrateTimerRef.current);
                 }

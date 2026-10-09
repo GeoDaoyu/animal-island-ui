@@ -4,7 +4,7 @@ Props/types below are copied from the library source. In an npm-installed projec
 
 ## CountUp
 
-Score-screen counter: animates `start` → `end` over `duration` seconds on `requestAnimationFrame`. No third-party timer or easing library — easing curves, number formatting and the 「当当」chime are all local. Shares Countdown's two shells (`default` / `island`), three sizes and cream-gradient digit plate, so a score screen and a deadline screen read as one family.
+Score-screen counter: animates `start` → `end` over `duration` seconds on `requestAnimationFrame`. No third-party timer or easing library — the easing curves and number formatting are local. Shares Countdown's two shells (`default` / `island`), three sizes and cream-gradient digit plate, so a score screen and a deadline screen read as one family.
 
 ```ts
 type CountUpSize = 'small' | 'middle' | 'large';
@@ -12,7 +12,7 @@ type CountUpVariant = 'default' | 'island';
 type CountUpEasingName = 'linear' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic' | 'easeOutExpo';
 type CountUpEasingFunction = (progress: number) => number;   // 0→1 in, 0→1 out
 type CountUpEasing = CountUpEasingName | CountUpEasingFunction;
-interface CountUpCelebrateOptions { text?: React.ReactNode; sound?: boolean; }
+interface CountUpCelebrateOptions { text?: React.ReactNode; }
 interface CountUpRenderState { value: number; reset: (newStartAt?: number) => void; }
 interface CountUpCompleteResult { shouldRepeat?: boolean; delay?: number; newStartAt?: number; }
 
@@ -42,9 +42,8 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 ```tsx
 <CountUp isCounting end={1320} duration={2} thousandsSeparator="," suffix="分" />
 
-{/* 「当当」: visual only / with a two-note synthesized chime / custom text */}
+{/* 「当当」: default sticker / custom text */}
 <CountUp isCounting end={score} celebrate />
-<CountUp isCounting end={score} celebrate={{ sound: true }} />
 <CountUp isCounting end={score} celebrate={{ text: '完美！' }} />
 
 {/* replay with a key — the documented recipe of the reference library */}
@@ -61,5 +60,5 @@ Notes:
 - **`end` is required** — there is no count-to-infinity mode. `isCounting` is the play/pause switch and defaults to `false`, so nothing animates until it is set.
 - **Replay rules**: changing `start` / `end` / `duration` restarts from `start`; a finished counter re-runs when `isCounting` flips `false → true`; otherwise use `key` or the render prop's `reset(newStartAt?)`.
 - **Pausing keeps elapsed progress** — resuming continues instead of restarting. `duration={0}`, and any environment without `requestAnimationFrame`, settle on the value immediately.
-- **`celebrate` is opt-in and purely decorative** (the whole layer is `aria-hidden`): two-beat plate bounce + two shockwave rings + four CSS sparkles + a `当当！` sticker that auto-hides after 900ms. `sound: true` adds a two-note Web Audio bell (988Hz → 740Hz) that silently no-ops when audio is unavailable or blocked by autoplay policy. The sticker overflows above the plate, so a parent with `overflow: hidden` clips it. Honors `prefers-reduced-motion`.
+- **`celebrate` is opt-in and purely decorative** (the whole layer is `aria-hidden`): two-beat plate bounce + two shockwave rings + four CSS sparkles + a `当当！` sticker that auto-hides after 900ms. The sticker overflows above the plate, so a parent with `overflow: hidden` clips it. Honors `prefers-reduced-motion`.
 - **A11y**: the root is `role="status"`; the animated digits are `aria-hidden`, and a visually-hidden span carries the default-formatted number only once the animation is not running — the final score is announced, never the per-frame values. `prefix` / `suffix` are decorative and excluded from that text. The digit plate is `aria-hidden` as a whole, so the `children` render prop must stay presentational — keep focusable elements (e.g. a replay button) outside the component, e.g. by storing the `reset` it hands you in a ref.

@@ -34,8 +34,8 @@ const COUNT_UP_API: ApiRow[] = [
     { prop: 'bordered', desc: '数字块是否带边框', type: 'boolean', defaultVal: 'false' },
     {
         prop: 'celebrate',
-        desc: '计数结束后的「当当」庆祝效果：数字弹跳 + 光环 + 星芒 + 徽标，sound 打开后额外合成提示音',
-        type: 'boolean | { text?: ReactNode; sound?: boolean }',
+        desc: '计数结束后的「当当」庆祝效果：数字弹跳 + 光环 + 星芒 + 徽标',
+        type: 'boolean | { text?: ReactNode }',
         defaultVal: 'false',
     },
     { prop: 'onUpdate', desc: '展示值更新时触发（每帧）', type: '(value: number) => void', defaultVal: '-' },
@@ -65,8 +65,8 @@ const CountUpDemo: React.FC = () => {
     // 注意 key 必须在同级之间唯一，所以每个重播计数器都带自己的前缀。
     const [round, setRound] = useState(0);
     const [score, setScore] = useState(SCORES[0]);
-    const [chimeRound, setChimeRound] = useState(0);
-    const [chimeScore, setChimeScore] = useState(2480);
+    const [celebrateRound, setCelebrateRound] = useState(0);
+    const [celebrateScore, setCelebrateScore] = useState(2480);
     const [intervalRound, setIntervalRound] = useState(0);
     // 渲染函数输出的 reset 交给外部按钮使用（见下方 children 示例）
     const resetRef = useRef<((newStartAt?: number) => void) | null>(null);
@@ -76,9 +76,9 @@ const CountUpDemo: React.FC = () => {
         setRound((value) => value + 1);
     };
 
-    const ringChime = () => {
-        setChimeScore((current) => pickScore(current));
-        setChimeRound((value) => value + 1);
+    const replayCelebrate = () => {
+        setCelebrateScore((current) => pickScore(current));
+        setCelebrateRound((value) => value + 1);
     };
 
     return (
@@ -105,27 +105,27 @@ const CountUpDemo: React.FC = () => {
                 </Button>
             </div>
 
-            <div style={labelStyle}>「当当」：默认只做视觉动效；sound 打开后会合成两声提示音</div>
+            <div style={labelStyle}>「当当」：纯视觉庆祝动效，也可以换成自己的文案</div>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
                 <CountUp
-                    key={`sound-${chimeRound}`}
+                    key={`ding-${celebrateRound}`}
                     isCounting
-                    end={chimeScore}
+                    end={celebrateScore}
                     duration={1.6}
                     suffix="分"
-                    celebrate={{ sound: true }}
+                    celebrate
                 />
                 <CountUp
-                    key={`text-${chimeRound}`}
+                    key={`text-${celebrateRound}`}
                     isCounting
-                    end={chimeScore}
+                    end={celebrateScore}
                     duration={1.6}
                     suffix="分"
                     celebrate={{ text: '完美！' }}
                 />
             </div>
             <div style={{ marginTop: 16 }}>
-                <Button size="small" onClick={ringChime}>
+                <Button size="small" onClick={replayCelebrate}>
                     重播
                 </Button>
             </div>
@@ -196,7 +196,7 @@ const CountUpDemo: React.FC = () => {
     suffix="分"
     size="large"
     variant="island"
-    celebrate={{ sound: true }}
+    celebrate
     onComplete={() => console.log('结算完成')}
 />
 

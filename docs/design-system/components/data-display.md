@@ -622,9 +622,9 @@ Source: `src/components/Avatar/avatar.module.less`. A `<span>` that shows either
 
 ## CountUp (score counter, digit plate + optional 「当当」)
 
-Source: `src/components/CountUp/CountUp.tsx` + `chime.ts` + `count-up.module.less`.
+Source: `src/components/CountUp/CountUp.tsx` + `count-up.module.less`.
 
-A declarative count-up readout for score screens: animate `start` → `end` over `duration` seconds. The `requestAnimationFrame` timestamp is the clock (no `setInterval` drift), `isCounting` plays / pauses / resumes without losing elapsed progress, and the digit plate reuses Countdown's cream-gradient tile so a score screen and a deadline screen read as one family. No timer library: easing, formatting and the chime are all local.
+A declarative count-up readout for score screens: animate `start` → `end` over `duration` seconds. The `requestAnimationFrame` timestamp is the clock (no `setInterval` drift), `isCounting` plays / pauses / resumes without losing elapsed progress, and the digit plate reuses Countdown's cream-gradient tile so a score screen and a deadline screen read as one family. No timer library: the easing curves and number formatting are local.
 
 **props**:
 ```ts
@@ -650,7 +650,7 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
     size?: CountUpSize;              // default 'middle'
     variant?: CountUpVariant;        // default 'default'
     bordered?: boolean;              // default false — draws the 1.5px plate border
-    celebrate?: boolean | { text?: React.ReactNode; sound?: boolean };   // default false
+    celebrate?: boolean | { text?: React.ReactNode };   // default false
     onUpdate?: (value: number) => void;
     onComplete?: (elapsedTime: number) => void | { shouldRepeat?: boolean; delay?: number; newStartAt?: number };
     children?: CountUpChildren;      // render prop, replaces the number content
@@ -721,7 +721,6 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 
 - The celebration is a **status effect, not information**: the whole layer (rings, sparkles, badge) is `aria-hidden` and `pointer-events: none`, and it sits above the plate only while `.celebrating` is set. It is unmounted 900ms after `onComplete` so the next completion replays the CSS animations from scratch.
 - The badge is the only warm-yellow element and the only thing that overflows the shell — it hangs off `bottom: 100%`, so a parent with `overflow: hidden` clips it. It is a pill (`50px`) instead of a rectangle; the sparkles are pure CSS `clip-path` stars, so no emoji, Unicode glyph or inline SVG is introduced (`design-rules.md` rules 15/16).
-- **Sound is opt-in and disposable**: `celebrate={{ sound: true }}` synthesizes a two-note bell with the Web Audio API (988Hz then 740Hz triangle waves, 0.16s apart, exponential decay envelope) — no audio asset and no dependency. The `AudioContext` is created lazily, reused, and everything (unsupported environment, blocked autoplay, a throwing node) degrades silently to the visual-only effect.
 - `duration` is measured against the rAF timestamp and pauses with `isCounting`; resuming continues from the stored elapsed time instead of restarting. `duration={0}` and any environment without `requestAnimationFrame` settle immediately on the value (`0` → `end`, no rAF → static `start`).
 - `start` / `end` / `duration` changes restart the animation from `start`; a completed component restarts when `isCounting` goes `false → true`, so the `key`-based replay recipe of the reference library is only needed when the value alone must trigger a re-run.
 - **Formatting** mirrors `use-count-up`: `decimalPlaces <= 0` renders `Math.round(value)` (then thousands grouping); otherwise `toFixed(places)` is split on `.` and rejoined with `decimalSeparator`; `formatter` wins over all of it. With `updateInterval > 0` the *elapsed time* is quantized (`floor(elapsed / interval) * interval`) before easing, so updates land exactly one interval apart.

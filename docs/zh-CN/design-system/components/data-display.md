@@ -621,9 +621,9 @@ stampYear?: string; // 发行年份，如「2026」 — 右上角照片上
 
 ## CountUp（计分数字滚动，数字块 + 可选「当当」）
 
-源码：`src/components/CountUp/CountUp.tsx` + `chime.ts` + `count-up.module.less`。
+源码：`src/components/CountUp/CountUp.tsx` + `count-up.module.less`。
 
-声明式的计分滚动读数：在 `duration` 秒内把 `start` 滚到 `end`。时钟取自 `requestAnimationFrame` 的时间戳（没有 `setInterval` 的累积漂移），`isCounting` 可播放 / 暂停 / 继续且不丢失已用时长，数字块复用 Countdown 的奶油渐变底 —— 结算页和倒计时页因此读起来是同一家族。缓动、格式化与「当当」提示音全部本地实现，没有计时器库。
+声明式的计分滚动读数：在 `duration` 秒内把 `start` 滚到 `end`。时钟取自 `requestAnimationFrame` 的时间戳（没有 `setInterval` 的累积漂移），`isCounting` 可播放 / 暂停 / 继续且不丢失已用时长，数字块复用 Countdown 的奶油渐变底 —— 结算页和倒计时页因此读起来是同一家族。缓动曲线与数字格式化全部本地实现，没有计时器库。
 
 **props**：
 ```ts
@@ -649,7 +649,7 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
     size?: CountUpSize;              // 默认 'middle'
     variant?: CountUpVariant;        // 默认 'default'
     bordered?: boolean;              // 默认 false —— 数字块 1.5px 描边
-    celebrate?: boolean | { text?: React.ReactNode; sound?: boolean };   // 默认 false
+    celebrate?: boolean | { text?: React.ReactNode };   // 默认 false
     onUpdate?: (value: number) => void;
     onComplete?: (elapsedTime: number) => void | { shouldRepeat?: boolean; delay?: number; newStartAt?: number };
     children?: CountUpChildren;      // 渲染函数，替换数字内容
@@ -719,7 +719,6 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 
 - 庆祝效果是**状态提示而非信息**：整层（光环、星芒、徽标）都是 `aria-hidden` + `pointer-events: none`，只在 `.celebrating` 期间出现在数字块上方；`onComplete` 之后 900ms 卸载，让下一次结束能从零重播 CSS 动画。
 - 徽标是唯一的暖黄色元素，也是唯一溢出外壳的部分 —— 它挂在 `bottom: 100%`，父级若 `overflow: hidden` 会裁掉它。徽标是 `50px` 胶囊而非矩形；星芒是纯 CSS `clip-path` 星形，因此没有引入 emoji、Unicode 字形或内联 SVG（`design-rules.md` 第 15/16 条）。
-- **提示音是可选项且可随时失效**：`celebrate={{ sound: true }}` 用 Web Audio API 现场合成两声钟响（988Hz → 740Hz 三角波，间隔 0.16s，指数衰减包络），没有音频资源也没有依赖。`AudioContext` 懒创建、复用，任何情况（环境不支持、自动播放被拦截、节点抛错）都静默降级为纯视觉效果。
 - `duration` 以 rAF 时间戳计时，并随 `isCounting` 一起暂停；继续时从已存时长接着走，而不是从头开始。`duration={0}` 以及没有 `requestAnimationFrame` 的环境会立即落值（`0` 直接到 `end`；无 rAF 则静止在 `start`）。
 - `start` / `end` / `duration` 变化会从 `start` 重新播放；已结束的组件在 `isCounting` `false → true` 时重播，因此只有「必须由数值本身触发重播」的场景才需要参考库那套 `key` 用法。
 - **格式化**与 `use-count-up` 对齐：`decimalPlaces <= 0` 渲染 `Math.round(value)`（再做千分位分组）；否则 `toFixed(places)` 按 `.` 拆分后用 `decimalSeparator` 重新拼接；`formatter` 优先级高于以上全部。`updateInterval > 0` 时先量化**已用时长**（`floor(elapsed / interval) * interval`）再做缓动，因此刷新点严格落在间隔整数倍上。

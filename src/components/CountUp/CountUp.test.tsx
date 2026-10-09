@@ -4,71 +4,9 @@ import { CountUp } from './CountUp';
 import type { CountUpEasing, CountUpEasingName, CountUpRenderState } from './CountUp';
 import styles from './count-up.module.less';
 
-/** Web Audio 探针：断言「当当」提示音是否真的合成出来 */
-const audioProbe = {
-    oscillators: [] as any[],
-    frequencies: [] as number[],
-    resumeCalls: 0,
-};
-
-class FakeAudioContext {
-    state = 'suspended';
-    currentTime = 0.5;
-    destination = {};
-    createOscillator() {
-        const oscillator = {
-            type: 'sine',
-            frequency: { setValueAtTime: vi.fn((value: number) => audioProbe.frequencies.push(value)) },
-            connect: vi.fn(),
-            start: vi.fn(),
-            stop: vi.fn(),
-        };
-        audioProbe.oscillators.push(oscillator);
-        return oscillator;
-    }
-    createGain() {
-        return {
-            gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-            connect: vi.fn(),
-        };
-    }
-    resume() {
-        audioProbe.resumeCalls += 1;
-        return Promise.resolve();
-    }
-}
-
-/** 构造一个可用的 AudioContext 替身，记录被合成的频率与 resume 次数 */
-const createAudioStub = (state: 'running' | 'suspended' = 'suspended') => {
-    const frequencies: number[] = [];
-    const resume = vi.fn(() => Promise.resolve());
-    class StubAudioContext {
-        state = state;
-        currentTime = 1;
-        destination = {};
-        createOscillator() {
-            return {
-                type: 'sine',
-                frequency: { setValueAtTime: vi.fn((value: number) => frequencies.push(value)) },
-                connect: vi.fn(),
-                start: vi.fn(),
-                stop: vi.fn(),
-            };
-        }
-        createGain() {
-            return { gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }, connect: vi.fn() };
-        }
-        resume = resume;
-    }
-    return { StubAudioContext, frequencies, resume };
-};
-
 describe('CountUp', () => {
     beforeEach(() => {
         vi.useFakeTimers();
-        audioProbe.oscillators.length = 0;
-        audioProbe.frequencies.length = 0;
-        audioProbe.resumeCalls = 0;
     });
 
     afterEach(() => {
@@ -309,35 +247,6 @@ describe('CountUp', () => {
         expect(screen.queryByText('当当！')).not.toBeInTheDocument();
     });
 
-    it('celebrate={{ sound: true }} 时合成两声「当当」', () => {
-        vi.stubGlobal('AudioContext', FakeAudioContext);
-        render(<CountUp isCounting end={10} duration={1} celebrate={{ sound: true }} />);
-        advance(1_200);
-
-        expect(audioProbe.oscillators).toHaveLength(2);
-        expect(audioProbe.frequencies).toEqual([988, 740]);
-        // 上下文处于 suspended 时先恢复播放
-        expect(audioProbe.resumeCalls).toBe(1);
-        audioProbe.oscillators.forEach((oscillator) => {
-            expect(oscillator.start).toHaveBeenCalled();
-            expect(oscillator.stop).toHaveBeenCalled();
-        });
-    });
-
-    it('未开启 sound 时不合成提示音', () => {
-        vi.stubGlobal('AudioContext', FakeAudioContext);
-        render(<CountUp isCounting end={10} duration={1} celebrate />);
-        advance(1_200);
-        expect(audioProbe.oscillators).toHaveLength(0);
-    });
-
-    it('没有 AudioContext 时提示音静默跳过', () => {
-        vi.stubGlobal('AudioContext', undefined);
-        render(<CountUp isCounting end={10} duration={1} celebrate={{ sound: true }} />);
-        expect(() => advance(1_200)).not.toThrow();
-        expect(audioProbe.oscillators).toHaveLength(0);
-    });
-
     it('应用尺寸、风格、边框与自定义属性', () => {
         render(
             <CountUp
@@ -354,81 +263,5 @@ describe('CountUp', () => {
         expect(root).toHaveClass(styles.large, styles.island, styles.bordered, 'custom');
         expect(root).toHaveAttribute('data-testid', 'score');
         expect(root).toHaveAccessibleName('本局得分');
-    });
-});
-
-/**
- * chime.ts 是计数结束「当当」提示音的合成模块，持有模块级 AudioContext 缓存，
- * 所以每个用例都 resetModules + 动态 import，拿到干净的模块实例。
- */
-describe('playCountUpChime', () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-        vi.resetModules();
-    });
-
-    const loadChime = async () => (await import('./chime')).playCountUpChime;
-
-    it('浏览器没有 AudioContext 时静默跳过', async () => {
-        vi.stubGlobal('AudioContext', undefined);
-        const playCountUpChime = await loadChime();
-        expect(() => playCountUpChime()).not.toThrow();
-    });
-
-    it('合成两声「当当」，并在上下文挂起时先恢复播放', async () => {
-        const { StubAudioContext, frequencies, resume } = createAudioStub('suspended');
-        vi.stubGlobal('AudioContext', StubAudioContext);
-
-        const playCountUpChime = await loadChime();
-        playCountUpChime();
-        expect(frequencies).toEqual([988, 740]);
-        expect(resume).toHaveBeenCalledTimes(1);
-    });
-
-    it('上下文已在运行时不重复 resume', async () => {
-        const { StubAudioContext, frequencies, resume } = createAudioStub('running');
-        vi.stubGlobal('AudioContext', StubAudioContext);
-
-        const playCountUpChime = await loadChime();
-        playCountUpChime();
-        expect(frequencies).toEqual([988, 740]);
-        expect(resume).not.toHaveBeenCalled();
-    });
-
-    it('AudioContext 构造失败时静默跳过', async () => {
-        class BlockedAudioContext {
-            constructor() {
-                throw new Error('blocked by autoplay policy');
-            }
-        }
-        vi.stubGlobal('AudioContext', BlockedAudioContext);
-
-        const playCountUpChime = await loadChime();
-        expect(() => playCountUpChime()).not.toThrow();
-    });
-
-    it('音频节点创建失败时静默跳过', async () => {
-        class BrokenAudioContext {
-            state = 'running';
-            currentTime = 0;
-            destination = {};
-            createOscillator() {
-                throw new Error('no audio device');
-            }
-        }
-        vi.stubGlobal('AudioContext', BrokenAudioContext);
-
-        const playCountUpChime = await loadChime();
-        expect(() => playCountUpChime()).not.toThrow();
-    });
-
-    it('兼容 webkit 前缀的 AudioContext', async () => {
-        const { StubAudioContext, frequencies } = createAudioStub('running');
-        vi.stubGlobal('AudioContext', undefined);
-        vi.stubGlobal('webkitAudioContext', StubAudioContext);
-
-        const playCountUpChime = await loadChime();
-        playCountUpChime();
-        expect(frequencies).toEqual([988, 740]);
     });
 });
