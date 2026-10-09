@@ -718,7 +718,7 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 **关键交互细节：**
 
 - 庆祝动效是**状态提示而非信息**：整层（光环、星芒、贴纸）都是 `aria-hidden` + `pointer-events: none`，只在 `.celebrating` 期间出现在数字块上方；`onComplete` 之后 900ms 卸载，让下一次结束能从零重播 CSS 动画。
-- **贴纸文案完全由使用方决定**：组件不内置任何文案。`celebrate` 只有动效（弹跳 + 光环 + 星芒）；`celebrate={{ text: '…' }}` 才会额外弹出暖黄色贴纸，文案随意（`完美！`、`当当！`、`+100`……）。
+- **贴纸承载文案**：`celebrate` 走两拍弹跳、光环与星芒；`celebrate={{ text: '…' }}` 会额外渲染暖黄色贴纸，文案随意（`完美！`、`当当！`、`+100`……）。
 - 贴纸是唯一的暖黄色元素，也是唯一溢出外壳的部分 —— 它挂在 `bottom: 100%`，父级若 `overflow: hidden` 会裁掉它。徽标是 `50px` 胶囊而非矩形；星芒是纯 CSS `clip-path` 星形，因此没有引入 emoji、Unicode 字形或内联 SVG（`design-rules.md` 第 15/16 条）。
 - `duration` 以 rAF 时间戳计时，并随 `isCounting` 一起暂停；继续时从已存时长接着走，而不是从头开始。`duration={0}` 以及没有 `requestAnimationFrame` 的环境会立即落值（`0` 直接到 `end`；无 rAF 则静止在 `start`）。
 - `start` / `end` / `duration` 变化会从 `start` 重新播放；已结束的组件在 `isCounting` `false → true` 时重播，因此只有「必须由数值本身触发重播」的场景才需要参考库那套 `key` 用法。

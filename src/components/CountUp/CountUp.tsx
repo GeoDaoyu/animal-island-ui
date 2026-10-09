@@ -21,7 +21,7 @@ export interface CountUpCompleteResult {
 }
 
 export interface CountUpCelebrateOptions {
-    /** 贴纸文案，任意内容；不传则只做动效、不弹贴纸 */
+    /** 贴纸文案，任意内容；不传则不渲染贴纸 */
     text?: React.ReactNode;
 }
 

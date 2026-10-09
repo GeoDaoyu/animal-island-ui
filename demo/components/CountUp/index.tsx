@@ -108,7 +108,7 @@ const CountUpDemo: React.FC = () => {
                 </Button>
             </div>
 
-            <div style={labelStyle}>庆祝动效：默认只做动效，celebrate.text 可以放任意文案</div>
+            <div style={labelStyle}>庆祝动效：celebrate 开启，传 text 可以放任意文案</div>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
                 <CountUp
                     key={`plain-${celebrateRound}`}
@@ -237,7 +237,7 @@ const CountUpDemo: React.FC = () => {
     suffix="分"
     size="large"
     variant="island"
-    celebrate                              // 只有动效
+    celebrate
     onComplete={() => console.log('结算完成')}
 />
 

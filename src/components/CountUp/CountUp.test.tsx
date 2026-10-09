@@ -225,13 +225,13 @@ describe('CountUp', () => {
         expect(screen.getByRole('status')).not.toHaveClass(styles.celebrating);
     });
 
-    it('celebrate 只做动效、不弹贴纸，且在动效结束后收起', () => {
+    it('celebrate 不传 text 时不渲染贴纸，动效结束后收起', () => {
         const { container } = render(<CountUp isCounting end={10} duration={1} celebrate />);
         advance(1_200);
 
         const root = screen.getByRole('status');
         expect(root).toHaveClass(styles.celebrating);
-        // 没传 text 就没有贴纸，只有弹跳 / 光环 / 星芒
+        // 没传 text 就没有贴纸
         expect(container.querySelector(`.${styles.badgeWrap}`)).toBeNull();
         // 装饰层对辅助技术隐藏
         expect(container.querySelector(`.${styles.effects}`)).toHaveAttribute('aria-hidden', 'true');
