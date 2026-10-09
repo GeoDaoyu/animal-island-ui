@@ -167,7 +167,7 @@ interface LoadingProps extends React.HTMLAttributes<HTMLDivElement> {
 - **Exit sequence**: `active` → false keeps the screen mounted with the `exiting` class (opacity → 0, `pointer-events: none`), and unmounts after a `fadeDuration * 1000` ms timer. Restoring `active` mid-fade cancels the timer and snaps back to fully opaque instantly.
 - `delay` re-arms on every `active` → `true` transition, so a fast load never flashes the screen.
 - a11y: the root carries `role="status"`; the snowfall wrapper and the vignette are `aria-hidden`; without `tip` a visually-hidden `加载中` span provides the accessible content.
-- `prefers-reduced-motion: reduce` stops the falling animation and the enter animation; the opacity fade is kept since it is not motion.
+- `prefers-reduced-motion: reduce` pauses the snowfall and the enter animation; the opacity fade is kept since it is not motion. The snowfall is **paused, not removed** — `animation: none` would drop all 50 flakes back to their static `top: -30px` above the viewport, leaving nothing but the night-sky backdrop. Because each flake already carries a *negative* `animation-delay`, pausing freezes every one at a random point along its fall, so reduced-motion users get a static snow scene filling the viewport rather than a black screen.
 
 ## Skeleton (shimmer placeholder)
 
