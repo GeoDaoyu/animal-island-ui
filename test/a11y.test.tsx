@@ -42,6 +42,7 @@ import { Carousel } from '@/components/Carousel';
 import { Collapse } from '@/components/Collapse';
 import { Cursor } from '@/components/Cursor';
 import { Countdown } from '@/components/Countdown';
+import { CountUp } from '@/components/CountUp';
 import { Time } from '@/components/Time';
 import { DatePicker } from '@/components/DatePicker';
 import { Divider } from '@/components/Divider';
@@ -362,6 +363,11 @@ describe('a11y smoke / 全组件 axe-core 自动检查', () => {
     it('Countdown (有可见倒计时)', async () => {
         const r = render(<Countdown value={Date.now() + 60_000} prefix="活动结束还有" />);
         await expectNoA11yViolations(containerOf(r), 'Countdown');
+    });
+
+    it('CountUp (有可见计分数值与庆祝徽标)', async () => {
+        const r = render(<CountUp isCounting end={1320} duration={0} thousandsSeparator="," suffix="分" celebrate />);
+        await expectNoA11yViolations(containerOf(r), 'CountUp');
     });
 
     it('Time (有可见时钟文本)', async () => {

@@ -150,6 +150,19 @@ export type { ImageProps, ImageColor } from './components/Image';
 export { Countdown } from './components/Countdown';
 export type { CountdownProps, CountdownSize, CountdownVariant } from './components/Countdown';
 
+export { CountUp } from './components/CountUp';
+export type {
+    CountUpProps,
+    CountUpSize,
+    CountUpVariant,
+    CountUpEasing,
+    CountUpEasingName,
+    CountUpEasingFunction,
+    CountUpRenderState,
+    CountUpCelebrateOptions,
+    CountUpCompleteResult,
+} from './components/CountUp';
+
 export { Time } from './components/Time';
 export type { TimeProps } from './components/Time';
 
