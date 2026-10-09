@@ -34,7 +34,7 @@ const COUNT_UP_API: ApiRow[] = [
     { prop: 'bordered', desc: '数字块是否带边框', type: 'boolean', defaultVal: 'false' },
     {
         prop: 'celebrate',
-        desc: '计数结束后的「当当」庆祝效果：数字弹跳 + 光环 + 星芒 + 徽标',
+        desc: '计数结束后的庆祝动效：数字弹跳 + 光环 + 星芒；传 text 会额外弹出一张文案贴纸',
         type: 'boolean | { text?: ReactNode }',
         defaultVal: 'false',
     },
@@ -60,20 +60,23 @@ const pickScore = (current: number) => {
     return next === current ? SCORES[(SCORES.indexOf(next) + 1) % SCORES.length] : next;
 };
 
+const replayRowStyle: React.CSSProperties = { marginTop: 16 };
+
 const CountUpDemo: React.FC = () => {
     // 换一局用 key 重播：与 use-count-up 文档推荐的 key 用法一致。
     // 注意 key 必须在同级之间唯一，所以每个重播计数器都带自己的前缀。
-    const [round, setRound] = useState(0);
+    const [scoreRound, setScoreRound] = useState(0);
     const [score, setScore] = useState(SCORES[0]);
     const [celebrateRound, setCelebrateRound] = useState(0);
     const [celebrateScore, setCelebrateScore] = useState(2480);
-    const [intervalRound, setIntervalRound] = useState(0);
+    const [formatRound, setFormatRound] = useState(0);
+    const [easingRound, setEasingRound] = useState(0);
     // 渲染函数输出的 reset 交给外部按钮使用（见下方 children 示例）
     const resetRef = useRef<((newStartAt?: number) => void) | null>(null);
 
     const settle = () => {
         setScore((current) => pickScore(current));
-        setRound((value) => value + 1);
+        setScoreRound((value) => value + 1);
     };
 
     const replayCelebrate = () => {
@@ -87,9 +90,9 @@ const CountUpDemo: React.FC = () => {
                 CountUp <DemoTag>数字滚动</DemoTag> <DemoTag>游戏结算</DemoTag>
             </div>
 
-            <div style={labelStyle}>游戏结算：从 0 滚到本局总分，结束时「当当」一下</div>
+            <div style={labelStyle}>游戏结算：从 0 滚到本局总分，结束时庆祝一下</div>
             <CountUp
-                key={`score-${round}`}
+                key={`score-${scoreRound}`}
                 isCounting
                 end={score}
                 duration={2}
@@ -99,16 +102,16 @@ const CountUpDemo: React.FC = () => {
                 variant="island"
                 celebrate
             />
-            <div style={{ marginTop: 16 }}>
+            <div style={replayRowStyle}>
                 <Button size="small" onClick={settle}>
                     再来一局
                 </Button>
             </div>
 
-            <div style={labelStyle}>「当当」：纯视觉庆祝动效，也可以换成自己的文案</div>
+            <div style={labelStyle}>庆祝动效：默认只做动效，celebrate.text 可以放任意文案</div>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center' }}>
                 <CountUp
-                    key={`ding-${celebrateRound}`}
+                    key={`plain-${celebrateRound}`}
                     isCounting
                     end={celebrateScore}
                     duration={1.6}
@@ -116,15 +119,23 @@ const CountUpDemo: React.FC = () => {
                     celebrate
                 />
                 <CountUp
-                    key={`text-${celebrateRound}`}
+                    key={`perfect-${celebrateRound}`}
                     isCounting
                     end={celebrateScore}
                     duration={1.6}
                     suffix="分"
                     celebrate={{ text: '完美！' }}
                 />
+                <CountUp
+                    key={`ding-${celebrateRound}`}
+                    isCounting
+                    end={celebrateScore}
+                    duration={1.6}
+                    suffix="分"
+                    celebrate={{ text: '当当！' }}
+                />
             </div>
-            <div style={{ marginTop: 16 }}>
+            <div style={replayRowStyle}>
                 <Button size="small" onClick={replayCelebrate}>
                     重播
                 </Button>
@@ -132,32 +143,62 @@ const CountUpDemo: React.FC = () => {
 
             <div style={labelStyle}>格式化：千分位 / 小数位 / 前后缀</div>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-                <CountUp isCounting end={1320} duration={0} thousandsSeparator="," />
-                <CountUp isCounting end={1320.5} duration={0} decimalPlaces={1} thousandsSeparator="," />
-                <CountUp isCounting end={88} duration={0} prefix="¥" />
-                <CountUp isCounting end={99.9} duration={0} decimalPlaces={1} decimalSeparator="," suffix="分" />
+                <CountUp key={`thousand-${formatRound}`} isCounting end={1320} duration={1.5} thousandsSeparator="," />
+                <CountUp
+                    key={`decimal-${formatRound}`}
+                    isCounting
+                    end={1320.5}
+                    duration={1.5}
+                    decimalPlaces={1}
+                    thousandsSeparator=","
+                />
+                <CountUp key={`prefix-${formatRound}`} isCounting end={88} duration={1.5} prefix="¥" />
+                <CountUp
+                    key={`separator-${formatRound}`}
+                    isCounting
+                    end={99.9}
+                    duration={1.5}
+                    decimalPlaces={1}
+                    decimalSeparator=","
+                    suffix="分"
+                />
+            </div>
+            <div style={replayRowStyle}>
+                <Button size="small" onClick={() => setFormatRound((value) => value + 1)}>
+                    重播
+                </Button>
             </div>
 
             <div style={labelStyle}>缓动曲线（同为 2 秒 1000 分）</div>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-                <CountUp isCounting end={1000} duration={2} easing="linear" thousandsSeparator="," />
-                <CountUp isCounting end={1000} duration={2} easing="easeOutCubic" thousandsSeparator="," />
-                <CountUp isCounting end={1000} duration={2} easing="easeOutExpo" thousandsSeparator="," />
+                <CountUp
+                    key={`linear-${easingRound}`}
+                    isCounting
+                    end={1000}
+                    duration={2}
+                    easing="linear"
+                    thousandsSeparator=","
+                />
+                <CountUp
+                    key={`cubic-${easingRound}`}
+                    isCounting
+                    end={1000}
+                    duration={2}
+                    easing="easeOutCubic"
+                    thousandsSeparator=","
+                />
+                <CountUp
+                    key={`expo-${easingRound}`}
+                    isCounting
+                    end={1000}
+                    duration={2}
+                    easing="easeOutExpo"
+                    thousandsSeparator=","
+                />
             </div>
-
-            <div style={labelStyle}>updateInterval：线性 10 秒，每秒只跳一次</div>
-            <CountUp
-                key={`interval-${intervalRound}`}
-                isCounting
-                start={10}
-                end={0}
-                duration={10}
-                easing="linear"
-                updateInterval={1}
-            />
-            <div style={{ marginTop: 16 }}>
-                <Button size="small" onClick={() => setIntervalRound((value) => value + 1)}>
-                    重新倒计时
+            <div style={replayRowStyle}>
+                <Button size="small" onClick={() => setEasingRound((value) => value + 1)}>
+                    重播
                 </Button>
             </div>
 
@@ -187,7 +228,7 @@ const CountUpDemo: React.FC = () => {
             <CodeBlock
                 code={`import { CountUp } from 'animal-island-ui';
 
-// 游戏结算页：从 0 滚到总分，结束时「当当」一下
+// 游戏结算页：从 0 滚到总分，结束时庆祝一下
 <CountUp
     isCounting
     end={score}
@@ -196,9 +237,12 @@ const CountUpDemo: React.FC = () => {
     suffix="分"
     size="large"
     variant="island"
-    celebrate
+    celebrate                              // 只有动效
     onComplete={() => console.log('结算完成')}
 />
+
+// 想要贴纸就传 text，文案随意
+<CountUp isCounting end={score} celebrate={{ text: '完美！' }} />
 
 // 换一局自动重播：换 key 是最省事的做法
 <CountUp key={round} isCounting end={score} celebrate />

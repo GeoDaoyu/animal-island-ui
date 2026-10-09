@@ -150,7 +150,7 @@ export const PAGE_INFO: Record<string, { title: string; desc: string }> = {
     },
     countup: {
         title: 'CountUp 数字滚动',
-        desc: '计分动效组件 — 从 start 滚到 end，支持缓动曲线、千分位 / 小数位格式化、暂停继续，以及结束时的「当当」庆祝动效',
+        desc: '计分动效组件 — 从 start 滚到 end，支持缓动曲线、千分位 / 小数位格式化、暂停继续，以及结束时的庆祝动效（可附任意文案贴纸）',
     },
     time: {
         title: 'Time 时钟',

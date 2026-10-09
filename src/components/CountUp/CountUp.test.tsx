@@ -218,33 +218,35 @@ describe('CountUp', () => {
         expect(numberText(container)).toBe('0');
     });
 
-    it('默认不渲染庆祝效果', () => {
+    it('默认不渲染庆祝动效', () => {
         render(<CountUp isCounting end={10} duration={1} />);
         advance(1_200);
-        expect(screen.queryByText('当当！')).not.toBeInTheDocument();
+        expect(screen.queryByText('完美！')).not.toBeInTheDocument();
         expect(screen.getByRole('status')).not.toHaveClass(styles.celebrating);
     });
 
-    it('celebrate 开启后在结束时弹出「当当！」并在动画结束后收起', () => {
+    it('celebrate 只做动效、不弹贴纸，且在动效结束后收起', () => {
         const { container } = render(<CountUp isCounting end={10} duration={1} celebrate />);
         advance(1_200);
 
         const root = screen.getByRole('status');
         expect(root).toHaveClass(styles.celebrating);
-        expect(screen.getByText('当当！')).toBeInTheDocument();
-        // 星芒与光环是纯装饰，对辅助技术隐藏
+        // 没传 text 就没有贴纸，只有弹跳 / 光环 / 星芒
+        expect(container.querySelector(`.${styles.badgeWrap}`)).toBeNull();
+        // 装饰层对辅助技术隐藏
         expect(container.querySelector(`.${styles.effects}`)).toHaveAttribute('aria-hidden', 'true');
 
         advance(1_000);
-        expect(screen.queryByText('当当！')).not.toBeInTheDocument();
         expect(root).not.toHaveClass(styles.celebrating);
     });
 
-    it('支持自定义庆祝文案', () => {
-        render(<CountUp isCounting end={10} duration={1} celebrate={{ text: '完美！' }} />);
+    it('celebrate.text 支持任意文案，并在动效结束后收起', () => {
+        const { container } = render(<CountUp isCounting end={10} duration={1} celebrate={{ text: '完美！' }} />);
         advance(1_200);
         expect(screen.getByText('完美！')).toBeInTheDocument();
-        expect(screen.queryByText('当当！')).not.toBeInTheDocument();
+
+        advance(1_000);
+        expect(container.querySelector(`.${styles.badgeWrap}`)).toBeNull();
     });
 
     it('应用尺寸、风格、边框与自定义属性', () => {

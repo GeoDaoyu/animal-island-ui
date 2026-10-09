@@ -115,7 +115,7 @@
     }
 }
 
-// ---------- 「当当」庆祝效果 ----------
+// ---------- 结束庆祝动效 ----------
 
 // 动画层：绝对定位铺满数字块，不参与布局也不吃指针事件
 .effects {
@@ -124,12 +124,12 @@
     pointer-events: none;
 }
 
-// 数字块自身：两拍弹跳 + 轻微摇摆，读起来就是「当、当」
+// 数字块自身：两拍弹跳 + 轻微摇摆，庆祝的「主音」
 .celebrating .plate {
     animation: animal-countup-pop 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-// 两圈向外扩散的光环（错开 0.12s，对应两声）
+// 两圈向外扩散的光环（错开 0.12s，两拍）
 .ring {
     position: absolute;
     inset: 0;
@@ -189,7 +189,7 @@
     animation-delay: 0.18s;
 }
 
-// 「当当！」黄色贴纸：从数字块上方弹出
+// 文案贴纸（可选）：从数字块上方弹出
 .badgeWrap {
     position: absolute;
     left: 50%;

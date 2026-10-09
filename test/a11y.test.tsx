@@ -365,8 +365,17 @@ describe('a11y smoke / 全组件 axe-core 自动检查', () => {
         await expectNoA11yViolations(containerOf(r), 'Countdown');
     });
 
-    it('CountUp (有可见计分数值与庆祝徽标)', async () => {
-        const r = render(<CountUp isCounting end={1320} duration={0} thousandsSeparator="," suffix="分" celebrate />);
+    it('CountUp (有可见计分数值与庆祝贴纸)', async () => {
+        const r = render(
+            <CountUp
+                isCounting
+                end={1320}
+                duration={0}
+                thousandsSeparator=","
+                suffix="分"
+                celebrate={{ text: '完美！' }}
+            />
+        );
         await expectNoA11yViolations(containerOf(r), 'CountUp');
     });
 

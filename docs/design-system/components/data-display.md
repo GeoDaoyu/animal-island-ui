@@ -620,7 +620,7 @@ Source: `src/components/Avatar/avatar.module.less`. A `<span>` that shows either
 **Avatar.Group** — `display: inline-flex` on a `.group` wrapper; avatars overlap via `margin-left: calc(-1 * var(--avatar-group-gap))` with the gap variable set inline from the `gap` prop (default 8px). Each avatar keeps a 2px `--animal-bg-color` ring so the overlap reads as deliberate stacking, not clipping. `maxCount` slices children and renders a `+N` pill (`styles.avatar` + `placeholder`, style overridable via `maxStyle`); group-level `size`/`shape` are cloned into children that don't set their own. `Avatar.Group` also works as a static property on `Avatar` (convenience alias).
 
 
-## CountUp (score counter, digit plate + optional 「当当」)
+## CountUp (score counter, digit plate + optional celebration)
 
 Source: `src/components/CountUp/CountUp.tsx` + `count-up.module.less`.
 
@@ -691,9 +691,9 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 .affix { color: #a89878; font-weight: 800; font-size: 0.62em; }   /* prefix / suffix */
 ```
 
-**Celebration — 「当当」(opt-in, exact values):**
+**Celebration (opt-in, exact values):**
 ```css
-/* the plate itself bounces twice — two beats read as 当、当 */
+/* the plate itself bounces twice */
 .celebrating .plate { animation: animal-countup-pop 0.7s cubic-bezier(0.4, 0, 0.2, 1) both; }
 /* 1 → 1.14(-2deg) → 0.98 → 1.08(1.6deg) → 0.99 → 1 */
 
@@ -709,7 +709,7 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 .sparkle:nth-child(odd)  { --cu-x: -16px; }   /* corner offsets are per-nth-child; delays 0 / .06 / .12 / .18s */
 .sparkle:nth-child(even) { --cu-x: 16px; }
 
-/* 「当当！」sticker, above the plate */
+/* sticker, above the plate — only rendered when celebrate.text is set */
 .badgeWrap { position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px; transform: translateX(-50%); }
 .badge { padding: 2px 10px; color: #725d42; font-weight: 800; font-size: 12/13/15px per size; letter-spacing: 0.04em;
          background: linear-gradient(180deg, #ffe08a 0%, #f7cd67 100%);
@@ -719,10 +719,11 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 
 **Key interaction details:**
 
-- The celebration is a **status effect, not information**: the whole layer (rings, sparkles, badge) is `aria-hidden` and `pointer-events: none`, and it sits above the plate only while `.celebrating` is set. It is unmounted 900ms after `onComplete` so the next completion replays the CSS animations from scratch.
-- The badge is the only warm-yellow element and the only thing that overflows the shell — it hangs off `bottom: 100%`, so a parent with `overflow: hidden` clips it. It is a pill (`50px`) instead of a rectangle; the sparkles are pure CSS `clip-path` stars, so no emoji, Unicode glyph or inline SVG is introduced (`design-rules.md` rules 15/16).
+- The celebration is a **status effect, not information**: the whole layer (rings, sparkles, sticker) is `aria-hidden` and `pointer-events: none`, and it sits above the plate only while `.celebrating` is set. It is unmounted 900ms after `onComplete` so the next completion replays the CSS animations from scratch.
+- **The sticker copy is the consumer's**: there is no built-in text. A bare `celebrate` is motion only (bounce + rings + sparkles); `celebrate={{ text: '…' }}` adds the warm-yellow sticker with arbitrary copy (`完美！`, `当当！`, `+100`, …).
+- The sticker is the only warm-yellow element and the only thing that overflows the shell — it hangs off `bottom: 100%`, so a parent with `overflow: hidden` clips it. It is a pill (`50px`) instead of a rectangle; the sparkles are pure CSS `clip-path` stars, so no emoji, Unicode glyph or inline SVG is introduced (`design-rules.md` rules 15/16).
 - `duration` is measured against the rAF timestamp and pauses with `isCounting`; resuming continues from the stored elapsed time instead of restarting. `duration={0}` and any environment without `requestAnimationFrame` settle immediately on the value (`0` → `end`, no rAF → static `start`).
 - `start` / `end` / `duration` changes restart the animation from `start`; a completed component restarts when `isCounting` goes `false → true`, so the `key`-based replay recipe of the reference library is only needed when the value alone must trigger a re-run.
 - **Formatting** mirrors `use-count-up`: `decimalPlaces <= 0` renders `Math.round(value)` (then thousands grouping); otherwise `toFixed(places)` is split on `.` and rejoined with `decimalSeparator`; `formatter` wins over all of it. With `updateInterval > 0` the *elapsed time* is quantized (`floor(elapsed / interval) * interval`) before easing, so updates land exactly one interval apart.
 - a11y: the root is `role="status"`; the animated digits are `aria-hidden` and a visually-hidden span carries the **default-formatted** number (never a `formatter` node). It stays empty while counting and is filled once the value settles — a per-frame live region would be unusable, so only the final score is announced. `prefix` / `suffix` are decorative and excluded from that text. The whole digit plate is `aria-hidden`, so a `children` render prop must stay presentational: a focusable element placed inside it would sit in an `aria-hidden` subtree (an axe `aria-hidden-focus` violation). The demo therefore parks the `reset` function it receives in a ref and renders the replay button **outside** the component.
-- `prefers-reduced-motion: reduce` drops the pop and hides the rings + sparkles; the badge keeps a plain 0.25s opacity fade so completion is still signalled visually.
+- `prefers-reduced-motion: reduce` drops the pop and hides the rings + sparkles; a sticker, when used, keeps a plain 0.25s opacity fade so completion is still signalled visually.

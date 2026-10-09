@@ -619,7 +619,7 @@ stampYear?: string; // 发行年份，如「2026」 — 右上角照片上
 
 **Avatar.Group** —— `.group` 外壳 `display: inline-flex`；头像通过 `margin-left: calc(-1 * var(--avatar-group-gap))` 相互叠加，gap 变量由 `gap` prop（默认 8px）内联设置。每个头像保留 2px `--animal-bg-color` 描边，让叠加读作「刻意堆叠」而非「裁切」。`maxCount` 裁切子级并渲染 `+N` 胶囊（`styles.avatar` + `placeholder`，可用 `maxStyle` 覆盖样式）；组级 `size` / `shape` 会克隆注入到未显式指定的子 Avatar。`Avatar.Group` 也可经 `Avatar` 静态属性访问（便捷别名）。
 
-## CountUp（计分数字滚动，数字块 + 可选「当当」）
+## CountUp（计分数字滚动，数字块 + 可选庆祝动效）
 
 源码：`src/components/CountUp/CountUp.tsx` + `count-up.module.less`。
 
@@ -690,9 +690,9 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 .affix { color: #a89878; font-weight: 800; font-size: 0.62em; }   /* prefix / suffix */
 ```
 
-**庆祝效果「当当」（可选，精确取值）**：
+**庆祝动效（可选，精确取值）**：
 ```css
-/* 数字块自己弹两下 —— 两拍就是「当、当」 */
+/* 数字块自己弹两下 */
 .celebrating .plate { animation: animal-countup-pop 0.7s cubic-bezier(0.4, 0, 0.2, 1) both; }
 /* 1 → 1.14(-2deg) → 0.98 → 1.08(1.6deg) → 0.99 → 1 */
 
@@ -707,7 +707,7 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
            animation: animal-countup-sparkle 0.72s cubic-bezier(0.4, 0, 0.2, 1) both; }
 /* 四角的位移量由 nth-child 提供 --cu-x / --cu-y；延迟 0 / .06 / .12 / .18s */
 
-/* 「当当！」贴纸，浮在数字块上方 */
+/* 贴纸，浮在数字块上方 —— 只有传了 celebrate.text 才渲染 */
 .badgeWrap { position: absolute; left: 50%; bottom: 100%; margin-bottom: 6px; transform: translateX(-50%); }
 .badge { padding: 2px 10px; color: #725d42; font-weight: 800; 按尺寸 12/13/15px; letter-spacing: 0.04em;
          background: linear-gradient(180deg, #ffe08a 0%, #f7cd67 100%);
@@ -717,10 +717,11 @@ interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'prefi
 
 **关键交互细节：**
 
-- 庆祝效果是**状态提示而非信息**：整层（光环、星芒、徽标）都是 `aria-hidden` + `pointer-events: none`，只在 `.celebrating` 期间出现在数字块上方；`onComplete` 之后 900ms 卸载，让下一次结束能从零重播 CSS 动画。
-- 徽标是唯一的暖黄色元素，也是唯一溢出外壳的部分 —— 它挂在 `bottom: 100%`，父级若 `overflow: hidden` 会裁掉它。徽标是 `50px` 胶囊而非矩形；星芒是纯 CSS `clip-path` 星形，因此没有引入 emoji、Unicode 字形或内联 SVG（`design-rules.md` 第 15/16 条）。
+- 庆祝动效是**状态提示而非信息**：整层（光环、星芒、贴纸）都是 `aria-hidden` + `pointer-events: none`，只在 `.celebrating` 期间出现在数字块上方；`onComplete` 之后 900ms 卸载，让下一次结束能从零重播 CSS 动画。
+- **贴纸文案完全由使用方决定**：组件不内置任何文案。`celebrate` 只有动效（弹跳 + 光环 + 星芒）；`celebrate={{ text: '…' }}` 才会额外弹出暖黄色贴纸，文案随意（`完美！`、`当当！`、`+100`……）。
+- 贴纸是唯一的暖黄色元素，也是唯一溢出外壳的部分 —— 它挂在 `bottom: 100%`，父级若 `overflow: hidden` 会裁掉它。徽标是 `50px` 胶囊而非矩形；星芒是纯 CSS `clip-path` 星形，因此没有引入 emoji、Unicode 字形或内联 SVG（`design-rules.md` 第 15/16 条）。
 - `duration` 以 rAF 时间戳计时，并随 `isCounting` 一起暂停；继续时从已存时长接着走，而不是从头开始。`duration={0}` 以及没有 `requestAnimationFrame` 的环境会立即落值（`0` 直接到 `end`；无 rAF 则静止在 `start`）。
 - `start` / `end` / `duration` 变化会从 `start` 重新播放；已结束的组件在 `isCounting` `false → true` 时重播，因此只有「必须由数值本身触发重播」的场景才需要参考库那套 `key` 用法。
 - **格式化**与 `use-count-up` 对齐：`decimalPlaces <= 0` 渲染 `Math.round(value)`（再做千分位分组）；否则 `toFixed(places)` 按 `.` 拆分后用 `decimalSeparator` 重新拼接；`formatter` 优先级高于以上全部。`updateInterval > 0` 时先量化**已用时长**（`floor(elapsed / interval) * interval`）再做缓动，因此刷新点严格落在间隔整数倍上。
 - 无障碍：根节点 `role="status"`；跳动中的数字 `aria-hidden`，由视觉隐藏的 span 承载**默认格式**的数值（永远不是 `formatter` 返回的节点）。它在计数期间保持为空、数值静止后写入 —— 每帧更新的 live region 无法使用，所以只播报最终得分。`prefix` / `suffix` 属装饰，不计入该文本。数字块整体 `aria-hidden`，因此 `children` 渲染函数只能放展示性内容：把可聚焦元素放进去会落在 `aria-hidden` 子树内（触发 axe 的 `aria-hidden-focus` 规则）。Demo 因此把渲染函数拿到的 `reset` 存进 ref，把重播按钮渲染在组件**外面**。
-- `prefers-reduced-motion: reduce` 下取消弹跳、隐藏光环与星芒；徽标保留 0.25s 纯淡入，结束状态依然有视觉信号。
+- `prefers-reduced-motion: reduce` 下取消弹跳、隐藏光环与星芒；使用贴纸时保留 0.25s 纯淡入，结束状态依然有视觉信号。

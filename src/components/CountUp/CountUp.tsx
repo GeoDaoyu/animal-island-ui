@@ -21,7 +21,7 @@ export interface CountUpCompleteResult {
 }
 
 export interface CountUpCelebrateOptions {
-    /** 庆祝文案，默认「当当！」 */
+    /** 贴纸文案，任意内容；不传则只做动效、不弹贴纸 */
     text?: React.ReactNode;
 }
 
@@ -63,7 +63,7 @@ export interface CountUpProps extends Omit<React.HTMLAttributes<HTMLDivElement>,
     variant?: CountUpVariant;
     /** 数字块是否带边框，默认无 */
     bordered?: boolean;
-    /** 计数结束后的「当当」庆祝效果，默认关闭 */
+    /** 计数结束后的庆祝动效（数字弹跳 + 光环 + 星芒），传 text 会额外弹出一张贴纸，默认关闭 */
     celebrate?: boolean | CountUpCelebrateOptions;
     /** 展示值更新时触发（每帧触发，与 updateInterval 无关） */
     onUpdate?: (value: number) => void;
@@ -112,8 +112,7 @@ const formatNumber = (value: number, decimalPlaces: number, decimalSeparator: st
     return `${groupThousands(integer, thousandsSeparator)}${decimalSeparator}${fraction}`;
 };
 
-const DEFAULT_CELEBRATE_TEXT = '当当！';
-/** 庆祝效果的总时长（ms），需略大于 CSS 动画时长，用于自动摘掉动画类以便下次重播 */
+/** 庆祝动效的总时长（ms），需略大于 CSS 动画时长，用于自动摘掉动画类以便下次重播 */
 const CELEBRATE_DURATION = 900;
 
 export const CountUp: React.FC<CountUpProps> = ({
@@ -323,8 +322,7 @@ export const CountUp: React.FC<CountUpProps> = ({
     const content = typeof children === 'function' ? children({ value: display, reset }) : formatRef.current(display);
     // 计数过程中不打扰读屏，静止后再播报最终数值（默认数字格式，不经过 formatter）
     const readable = counting ? '' : formatNumber(display, places, decimalSeparator, thousandsSeparator);
-    const celebrateText =
-        typeof celebrate === 'object' && celebrate.text !== undefined ? celebrate.text : DEFAULT_CELEBRATE_TEXT;
+    const celebrateText = typeof celebrate === 'object' ? celebrate.text : undefined;
     const classNames = [
         styles['count-up'],
         styles[size],
@@ -349,9 +347,11 @@ export const CountUp: React.FC<CountUpProps> = ({
                             <span className={styles.sparkle} />
                             <span className={styles.sparkle} />
                         </span>
-                        <span className={styles.badgeWrap}>
-                            <span className={styles.badge}>{celebrateText}</span>
-                        </span>
+                        {celebrateText !== undefined && (
+                            <span className={styles.badgeWrap}>
+                                <span className={styles.badge}>{celebrateText}</span>
+                            </span>
+                        )}
                     </span>
                 )}
                 <span className={styles.plate} aria-hidden="true">
