@@ -37,6 +37,7 @@ import SelectDemo from './components/Select';
 import DatePickerDemo from './components/DatePicker';
 import TimePickerDemo from './components/TimePicker';
 import CountdownDemo from './components/Countdown';
+import CountUpDemo from './components/CountUp';
 import TimeDemo from './components/Time';
 import CarouselDemo from './components/Carousel';
 import SkillDemo from './components/Skill';
@@ -89,6 +90,7 @@ const PAGES: Record<string, React.FC> = {
     avatar: AvatarDemo,
     badge: BadgeDemo,
     countdown: CountdownDemo,
+    countup: CountUpDemo,
     time: TimeDemo,
     carousel: CarouselDemo,
     skill: SkillDemo,

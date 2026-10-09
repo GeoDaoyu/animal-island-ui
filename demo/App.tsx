@@ -124,6 +124,7 @@ const MENU_ITEMS: MenuItem[] = [
             { key: 'carousel', label: 'Carousel 轮播图' },
             { key: 'time', label: 'Time 时钟' },
             { key: 'countdown', label: 'Countdown 倒计时' },
+            { key: 'countup', label: 'CountUp 数字滚动', isNew: true },
         ],
     },
 ];

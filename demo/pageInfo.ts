@@ -148,6 +148,10 @@ export const PAGE_INFO: Record<string, { title: string; desc: string }> = {
         title: 'Countdown 倒计时',
         desc: '倒计时组件 — 接收结束时间，支持天/时/分/秒格式、三种尺寸、两种风格与归零回调',
     },
+    countup: {
+        title: 'CountUp 数字滚动',
+        desc: '计分动效组件 — 从 start 滚到 end，支持缓动曲线、千分位 / 小数位格式化、暂停继续，以及结束时的庆祝动效（可附任意文案贴纸）',
+    },
     time: {
         title: 'Time 时钟',
         desc: '时间显示组件 — HUD 风格的卡片，实时显示星期、月日与 HH:MM，每秒自动刷新，冒号闪烁与入场动画',
