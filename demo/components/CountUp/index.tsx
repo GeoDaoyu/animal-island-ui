@@ -62,11 +62,15 @@ const pickScore = (current: number) => {
 
 const replayRowStyle: React.CSSProperties = { marginTop: 16 };
 
+/** 每捡一次材料固定增加的数量 */
+const WOOD_PER_PICK = 15;
+
 const CountUpDemo: React.FC = () => {
     // 换一局用 key 重播：与 use-count-up 文档推荐的 key 用法一致。
     // 注意 key 必须在同级之间唯一，所以每个重播计数器都带自己的前缀。
     const [scoreRound, setScoreRound] = useState(0);
     const [score, setScore] = useState(SCORES[0]);
+    const [wood, setWood] = useState(0);
     const [celebrateRound, setCelebrateRound] = useState(0);
     const [celebrateScore, setCelebrateScore] = useState(2480);
     const [formatRound, setFormatRound] = useState(0);
@@ -105,6 +109,24 @@ const CountUpDemo: React.FC = () => {
             <div style={replayRowStyle}>
                 <Button size="small" onClick={settle}>
                     再来一局
+                </Button>
+            </div>
+
+            <div style={labelStyle}>累加计数：每捡一次木头 +{WOOD_PER_PICK}，接着上一个数往上滚</div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <CountUp
+                    // start / end 一起往后挪，就会从上一段继续涨（不是从 0 重来）
+                    isCounting
+                    start={Math.max(0, wood - WOOD_PER_PICK)}
+                    end={wood}
+                    duration={0.6}
+                    suffix=" 木头"
+                />
+                <Button size="small" onClick={() => setWood((value) => value + WOOD_PER_PICK)}>
+                    捡到木头 +{WOOD_PER_PICK}
+                </Button>
+                <Button size="small" onClick={() => setWood(0)}>
+                    重置
                 </Button>
             </div>
 
@@ -246,6 +268,9 @@ const CountUpDemo: React.FC = () => {
 
 // 换一局自动重播：换 key 是最省事的做法
 <CountUp key={round} isCounting end={score} celebrate />
+
+// 累加：捡材料时 start / end 一起往后挪，就从上一段接着涨
+<CountUp isCounting start={Math.max(0, wood - 15)} end={wood} duration={0.6} suffix=" 木头" />
 
 // 自定义渲染；渲染函数输出位于 aria-hidden 区域，按钮要放在外面
 <CountUp isCounting end={86} duration={1.2}>
